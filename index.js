@@ -49,7 +49,7 @@ const wsdl = `<?xml version="1.0" encoding="UTF-8"?>
     <service name="Lang">
         <documentation>The Number Conversion Web Service, implemented with DataFlex, provides functions that convert numbers into words or dollar amounts.</documentation>
         <port name="LangSoap" binding="tns:LangSoapBinding">
-            <soap:address location="http://192.168.0.13:1337/"/>
+            <soap:address location="http://192.168.0.13:1337/lang"/>
         </port>
     </service>
 </definitions>
@@ -74,5 +74,5 @@ app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 app.listen(1337, function() {
    // Note: /wsdl route will be handled by soap module
    // and all other routes & middleware will continue to work
-   soap.listen(app, '/', services, wsdl);
+   soap.listen(app, '/lang', services, wsdl);
 });
