@@ -75,8 +75,5 @@ app.get('/test', (req, res) => {
     res.send('hello!');
 });
 
-app.listen(1337, function() {
-   // Note: /wsdl route will be handled by soap module
-   // and all other routes & middleware will continue to work
-   soap.listen(app, '/lang', services, wsdl);
-});
+soap.listen(app, '/lang', services, wsdl);
+app.listen();
