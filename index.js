@@ -1,8 +1,7 @@
 const soap = require('soap');
 const { transliterate } = require('transliteration');
 
-const wsdl = `
-<?xml version="1.0" encoding="UTF-8"?>
+const wsdl = `<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://192.168.0.13:1337/" name="Lang" targetNamespace="http://192.168.0.13:1337/">
     <types>
         <xs:schema elementFormDefault="qualified" targetNamespace="http://192.168.0.13:1337/">
@@ -50,7 +49,7 @@ const wsdl = `
     <service name="Lang">
         <documentation>The Number Conversion Web Service, implemented with DataFlex, provides functions that convert numbers into words or dollar amounts.</documentation>
         <port name="LangSoap" binding="tns:LangSoapBinding">
-            <soap:address location="http://192.168.0.13:1337/lang"/>
+            <soap:address location="http://192.168.0.13:1337/"/>
         </port>
     </service>
 </definitions>
@@ -75,5 +74,5 @@ app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 app.listen(1337, function() {
    // Note: /wsdl route will be handled by soap module
    // and all other routes & middleware will continue to work
-   soap.listen(app, '/lang', services, wsdl);
+   soap.listen(app, '/', services, wsdl);
 });
