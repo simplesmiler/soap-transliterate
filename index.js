@@ -1,10 +1,18 @@
 const soap = require('soap');
 const { transliterate } = require('transliteration');
 
+let soapBaseUrl = process.env.SOAP_BASE_URL;
+if (!soapBaseUrl) {
+    soapBaseUrl = 'https://soap-transliterate.simplesmiler.now.sh';
+    // soapBaseUrl = 'http://192.168.0.13:1337';
+    // soapBaseUrl = 'http://localhost:1337';
+}
+const port = process.env.PORT || 1337;
+
 const wsdl = `<?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://192.168.0.13:1337/" name="Lang" targetNamespace="http://192.168.0.13:1337/">
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="${soapBaseUrl}" name="Lang" targetNamespace="${soapBaseUrl}">
     <types>
-        <xs:schema elementFormDefault="qualified" targetNamespace="http://192.168.0.13:1337/">
+        <xs:schema elementFormDefault="qualified" targetNamespace="${soapBaseUrl}">
             <xs:element name="TransliterateRequest">
                 <xs:complexType>
                     <xs:sequence>
@@ -49,7 +57,7 @@ const wsdl = `<?xml version="1.0" encoding="UTF-8"?>
     <service name="Lang">
         <documentation>The Number Conversion Web Service, implemented with DataFlex, provides functions that convert numbers into words or dollar amounts.</documentation>
         <port name="LangSoap" binding="tns:LangSoapBinding">
-            <soap:address location="http://192.168.0.13:1337/lang"/>
+            <soap:address location="${soapBaseUrl}/lang"/>
         </port>
     </service>
 </definitions>
@@ -71,9 +79,5 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 
-app.get('/test', (req, res) => {
-    res.send('hello!');
-});
-
 soap.listen(app, '/lang', services, wsdl);
-app.listen();
+app.listen(port);
