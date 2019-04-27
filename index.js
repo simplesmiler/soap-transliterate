@@ -1,21 +1,60 @@
-// const soap = require('soap-server');
-//
-// function LangService() {
-//   // @NOOP
-// }
-//
-// LangService.prototype.transliterate = function (text) {
-//   return transliterate(text);
-// };
-//
-// const soapServer = new soap.SoapServer();
-// soapServer.addService('lang', new LangService());
-//
-// soapServer.listen(1337, '0.0.0.0');
-
-const fs = require('fs');
 const soap = require('soap');
 const { transliterate } = require('transliteration');
+
+const wsdl = `
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://192.168.0.13:1337/" name="Lang" targetNamespace="http://192.168.0.13:1337/">
+    <types>
+        <xs:schema elementFormDefault="qualified" targetNamespace="http://192.168.0.13:1337/">
+            <xs:element name="TransliterateRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="InputText" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="TransliterateResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="OutputText" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </types>
+    <message name="TransliterateSoapRequest">
+        <part name="parameters" element="tns:TransliterateRequest"/>
+    </message>
+    <message name="TransliterateSoapResponse">
+        <part name="parameters" element="tns:TransliterateResponse"/>
+    </message>
+    <portType name="LangSoapType">
+        <operation name="Transliterate">
+            <documentation>Returns the word corresponding to the positive number passed as parameter. Limited to quadrillions.</documentation>
+            <input message="tns:TransliterateSoapRequest"/>
+            <output message="tns:TransliterateSoapResponse"/>
+        </operation>
+    </portType>
+    <binding name="LangSoapBinding" type="tns:LangSoapType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="Transliterate">
+            <soap:operation soapAction="" style="document"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="Lang">
+        <documentation>The Number Conversion Web Service, implemented with DataFlex, provides functions that convert numbers into words or dollar amounts.</documentation>
+        <port name="LangSoap" binding="tns:LangSoapBinding">
+            <soap:address location="http://192.168.0.13:1337/lang"/>
+        </port>
+    </service>
+</definitions>
+`;
 
 const services = {
     Lang: {
@@ -23,55 +62,18 @@ const services = {
             Transliterate(args) {
                 return transliterate(args.InputText);
             },
-
-            // // This is how to define an asynchronous function with a callback.
-            // MyAsyncFunction: function(args, callback) {
-            //     // do some work
-            //     callback({
-            //         name: args.name
-            //     });
-            // },
-            //
-            // // This is how to define an asynchronous function with a Promise.
-            // MyPromiseFunction: function(args) {
-            //     return new Promise((resolve) => {
-            //         // do some work
-            //         resolve({
-            //             name: args.name
-            //         });
-            //     });
-            // },
-            //
-            // // This is how to receive incoming headers
-            // HeadersAwareFunction: function(args, cb, headers) {
-            //     return {
-            //         name: headers.Token
-            //     };
-            // },
-            //
-            // // You can also inspect the original `req`
-            // reallyDetailedFunction: function(args, cb, headers, req) {
-            //     console.log('SOAP `reallyDetailedFunction` request from ' + req.connection.remoteAddress);
-            //     return {
-            //         name: headers.Token
-            //     };
-            // }
-        }
-    }
+        },
+    },
 };
 
 const express = require('express');
 const app = express();
 
-const audit = require('express-requests-logger');
-app.use(audit());
-
 const bodyParser = require('body-parser');
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 
-const xml = fs.readFileSync('lang.wsdl', 'utf8');
 app.listen(1337, function() {
    // Note: /wsdl route will be handled by soap module
    // and all other routes & middleware will continue to work
-   soap.listen(app, '/lang', services, xml);
+   soap.listen(app, '/lang', services, wsdl);
 });
