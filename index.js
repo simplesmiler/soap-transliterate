@@ -67,7 +67,7 @@ const services = {
     Lang: {
         LangSoap: {
             Transliterate(args) {
-                return transliterate(args.InputText);
+                return { OutputText: transliterate(args.InputText) };
             },
         },
     },
